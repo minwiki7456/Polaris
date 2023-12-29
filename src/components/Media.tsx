@@ -13,11 +13,11 @@ export default function Media() {
       linkText: "@cybervector_",
       link: "https://twitter.com/cybervector_",
     },
-    {
-      title: "Alpha",
-      linkText: "@ChaunceyCrypto",
-      link: "https://twitter.com/ChaunceyCrypto",
-    },
+    // {
+    //   title: "Alpha",
+    //   linkText: "@ChaunceyCrypto",
+    //   link: "https://twitter.com/ChaunceyCrypto",
+    // },
   ];
 
   return (

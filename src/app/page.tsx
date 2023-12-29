@@ -28,20 +28,25 @@ import { ChainKey, inscriptionChains } from "@/config/chains";
 import useInterval from "@/hooks/useInterval";
 import { handleAddress, handleLog } from "@/utils/helper";
 
-const example =
-  'data:,{"p":"asc-20","op":"mint","tick":"aval","amt":"100000000"}';
+const strExample =
+  'data:,{"p":"bnb-48","op":"mint","tick":"fans","amt":"1"}';
+const hexExample =
+  '0x646174613a2c7b2270223a22626e622d3438222c226f70223a226d696e74222c227469636b223a2266616e73222c22616d74223a2231227d';
 
-type RadioType = "meToMe" | "manyToOne";
+type TxRadioType = "meToMe" | "manyToOne";
+type DataRadioType = "string" | "hex";
 
 type GasRadio = "all" | "tip";
 
 export default function Home() {
   const [chain, setChain] = useState<Chain>(mainnet);
   const [privateKeys, setPrivateKeys] = useState<Hex[]>([]);
-  const [radio, setRadio] = useState<RadioType>("meToMe");
+  const [txRadio, setTxRadio] = useState<TxRadioType>("meToMe");
   const [toAddress, setToAddress] = useState<Hex>();
   const [rpc, setRpc] = useState<string>();
-  const [inscription, setInscription] = useState<string>("");
+  const [dataRadio, setDataRadio] = useState<DataRadioType>("string");
+  const [dataStr, setDataStr] = useState<string>("");
+  const [dataHex, setDataHex] = useState<string>("");
   const [gas, setGas] = useState<number>(0);
   const [running, setRunning] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(0);
@@ -68,13 +73,11 @@ export default function Home() {
         accounts.map((account) => {
           return client.sendTransaction({
             account,
-            to: radio === "meToMe" ? account.address : toAddress,
+            to: txRadio === "meToMe" ? account.address : toAddress,
             value: 0n,
-            ...(inscription
-              ? {
-                  data: stringToHex(inscription),
-                }
-              : {}),
+              ...(dataRadio === "string" ?
+                  {data: stringToHex(dataStr),} :
+                  {data: dataHex as Hex}),
             ...(gas > 0
               ? gasRadio === "all"
                 ? {
@@ -116,7 +119,7 @@ export default function Home() {
       return;
     }
 
-    if (radio === "manyToOne" && !toAddress) {
+    if (txRadio === "manyToOne" && !toAddress) {
       pushLog("没有地址", "error");
       setRunning(false);
       return;
@@ -129,12 +132,12 @@ export default function Home() {
     // }
 
     setRunning(true);
-  }, [privateKeys.length, pushLog, radio, toAddress]);
+  }, [privateKeys.length, pushLog, txRadio, toAddress]);
 
   return (
     <div className=" flex flex-col gap-4">
       <div className=" flex flex-col gap-2">
-        <span>链（选要打铭文的链）:</span>
+        <span>链:</span>
         <TextField
           select
           defaultValue="eth"
@@ -187,25 +190,25 @@ export default function Home() {
         row
         defaultValue="meToMe"
         onChange={(e) => {
-          const value = e.target.value as RadioType;
-          setRadio(value);
+          const value = e.target.value as TxRadioType;
+          setTxRadio(value);
         }}
       >
         <FormControlLabel
           value="meToMe"
           control={<Radio />}
-          label="自转"
+          label="自转(每个钱包向自己转账)"
           disabled={running}
         />
         <FormControlLabel
           value="manyToOne"
           control={<Radio />}
-          label="多转一"
+          label="多转一(每个钱包向单独一个地址转账)"
           disabled={running}
         />
       </RadioGroup>
 
-      {radio === "manyToOne" && (
+      {txRadio === "manyToOne" && (
         <div className=" flex flex-col gap-2">
           <span>转给谁的地址（必填）:</span>
           <TextField
@@ -220,18 +223,53 @@ export default function Home() {
         </div>
       )}
 
-      <div className=" flex flex-col gap-2">
-        <span>铭文（选填，原始铭文，不是转码后的十六进制）:</span>
-        <TextField
-          size="small"
-          placeholder={`铭文，不要输入错了，多检查下，例子：\n${example}`}
-          disabled={running}
-          onChange={(e) => {
-            const text = e.target.value;
-            setInscription(text.trim());
-          }}
-        />
-      </div>
+        <RadioGroup
+            row
+            defaultValue="string"
+            onChange={(e) => {
+                const value = e.target.value as DataRadioType;
+                setDataRadio(value);
+            }}
+        >
+            <FormControlLabel
+                value="string"
+                control={<Radio />}
+                label="字符串"
+                disabled={running}
+            />
+            <FormControlLabel
+                value="hex"
+                control={<Radio />}
+                label="16进制"
+                disabled={running}
+            />
+        </RadioGroup>
+
+        {dataRadio === "string" ?
+            (<div className=" flex flex-col gap-2">
+                <span>字符串（选填）:</span>
+                <TextField
+                  size="small"
+                  placeholder={`字符串，注意中英文、全角半角和空格，例子：\n${strExample}`}
+                  disabled={running}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setDataStr(text.trim());
+                  }}
+                />
+              </div>):
+            (<div className=" flex flex-col gap-2">
+                <span>十六进制Hex（选填）:</span>
+                <TextField
+                    size="small"
+                    placeholder={`十六进制Hex，例子：\n${hexExample}`}
+                    disabled={running}
+                    onChange={(e) => {
+                        const text = e.target.value;
+                        setDataHex(text);
+                    }}
+                />
+            </div>)}
 
       <div className=" flex flex-col gap-2">
         <span>
