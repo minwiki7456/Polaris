@@ -16,12 +16,16 @@ export default function Header() {
 
   const nav = [
     {
-      title: "Inscription",
+      title: "铭文",
       link: "/",
     },
     {
       title: "Ierc Pow",
       link: "/ierc",
+    },
+    {
+      title: "靓号钱包生成",
+      link: "/vanityCreate",
     },
   ];
 

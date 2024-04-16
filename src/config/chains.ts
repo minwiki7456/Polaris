@@ -19,6 +19,7 @@ import {
   mainnet,
   mantle,
   meter,
+  metis,
   neonMainnet,
   okc,
   opBNB,
@@ -27,6 +28,28 @@ import {
   sepolia,
   zkSync,
 } from "viem/chains";
+
+export const xLayer = defineChain({
+  id: 196,
+  name: "xLayer",
+  network: "xLayer",
+  nativeCurrency: {
+    decimals: 18,
+    name: "OKB",
+    symbol: "OKB",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.xlayer.tech"],
+    },
+    public: {
+      http: ["https://rpc.xlayer.tech"],
+    },
+  },
+  blockExplorers: {
+    default: { name: "Explorer", url: "https://oklink.com/cn/xlayer" },
+  },
+});
 
 export const shibarium = defineChain({
   id: 109,
@@ -165,6 +188,7 @@ export const inscriptionChains = {
   bsc,
   opBNB,
   // okc,
+  xLayer,
   polygon,
   fantom,
   avalanche,
@@ -174,6 +198,7 @@ export const inscriptionChains = {
   zkSync,
   classic,
   // bevm,
+  metis,
   xt,
   iotex,
   meter,
